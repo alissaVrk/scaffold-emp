@@ -70,88 +70,45 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 
 ### a list for a web app
 
-
-create react app
-
-add apollo
-
-  authenticate request
-
-add tailwind css + copy styles from marketing
-
-router
-
-  home page
-
-  paths page
-
-  title + meta tags
-
-auth - login + logout
-
-  static test user
-
-  test user
-
-  real user
-
-  logout
-
-sentry + mock
-
-optimizely + mock (A/B tests)
-
-analytics + mock
-
-e2e - cypress
-
-  local
-
-  ci -  staging 
-
-  nightly cleanup
-
-unit tests
-
-  component / hook that uses data from apollo
-
-  action that uses apollo client
-
-  some test utils to make it all nicer
-
-code structure
-
-  naming - TBD
-
-  modules (inner/ separate data modules?) - TBD
-
-  maybe some script to add a module
-
-lint + ts configs
-
-  what ever you like 😃
-
-  module boundaries, it would be nice the we could access the mudule-test file as well or put the tests out of the modules
-
-deployment to Vercel
-
-.env files - I added these, not sure wether to push to git
-
-secrets and .env files
-
-ci build
-
-  yarn
-
-  lint
-
-  unit test
-
-  build - ts + build for production
-
-  e2e?
-
-  preview?
-
-Storybook
-
+* create react app
+* add apollo
+  * authenticate request
+* add tailwind css + copy styles from marketing
+* router
+  * home page
+  * paths page
+  * title + meta tags
+* auth - login + logout
+  * static test user
+  * test user
+  * real user
+  * logout
+* sentry + mock
+* optimizely + mock (A/B tests)
+* analytics + mock
+* e2e - cypress
+  * local
+  * ci -  staging 
+  * nightly cleanup
+* unit tests
+  * component / hook that uses data from apollo
+  * action that uses apollo client
+  * some test utils to make it all nicer
+* code structure
+  * naming - TBD
+  * modules (inner/ separate data modules?) - TBD
+  * maybe some script to add a module
+* lint + ts configs
+  * what ever you like 😃
+  * module boundaries, it would be nice the we could access the mudule-test file as well or put the tests out of the modules
+* deployment to Vercel
+* .env files - I added these, not sure wether to push to git
+* secrets and .env files
+* ci build
+  * yarn
+  * lint
+  * unit test
+  * build - ts + build for production
+  * e2e?
+  * preview?
+* Storybook
