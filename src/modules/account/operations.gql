@@ -1,0 +1,12 @@
+query currentAccount {
+  currentAccount {
+    id
+    accountAttributes
+  }
+}
+
+query currentAccountId {
+  currentAccount {
+    id
+  }
+}

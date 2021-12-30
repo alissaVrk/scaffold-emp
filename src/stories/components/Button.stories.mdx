@@ -1,0 +1,39 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs';
+
+import { Button } from '../../components';
+
+<Meta title="components/Button" component={Button}/>
+
+# Button
+
+You can use simple icons
+<Canvas>
+  <Story name="Button">
+    <div className="flex gap-4">
+      <Button variant="dark" title="Get Started"/>
+      <Button variant="bordered" title="Get Started"/>
+    </div>
+  </Story>
+</Canvas>
+
+
+You can increase their width by using the `fullWidth` prop
+
+<Canvas>
+  <Button variant="dark" title="Get Started" fullWidth/>
+</Canvas>
+
+## Disabled
+
+<Canvas>
+  <Button variant="dark" title="Get Started" disabled/>
+  <Button variant="bordered" title="Get Started" disabled/>
+</Canvas>
+
+## Loading
+
+<Canvas>
+  <Button variant="dark" title="Get Started" loading/>
+  <Button variant="bordered" title="Get Started" loading/>
+</Canvas>
+

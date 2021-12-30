@@ -1,0 +1,351 @@
+version: 2.1
+
+orbs:
+  pulumi: pulumi/pulumi@2.0.0
+  aws-cli: circleci/aws-cli@1.3.0
+  slack: circleci/slack@4.2
+  node: circleci/node@4.5.1
+  android: circleci/android@1.0.3
+  cypress: cypress-io/cypress@1.29.0
+
+parameters:
+  # This parameter is used to trigger the main workflow
+  trigger:
+    type: boolean
+    default: true
+
+  # This parameter is used to trigger the beta build workflow
+  mobile-beta:
+    type: boolean
+    default: false
+
+  # A parameter per package
+  web-client:
+    type: boolean
+    default: false
+
+executors:
+  node:
+    docker:
+      - image: circleci/node:14.18.1
+    resource_class: 'medium+'
+  cypress-16-4-0:
+    docker:
+      - image: 'cypress/base:16.4.0'
+
+jobs:
+  # Monorepo main job
+  trigger-workflows:
+    executor: node
+    steps:
+      - checkout
+      - run:
+          name: Trigger workflows
+          command: chmod +x .circleci/circle_trigger.sh && .circleci/circle_trigger.sh
+
+  noop:
+    executor: node
+    steps:
+      - run: 'echo "NOOP"'
+
+  prepare:
+    parameters:
+      package_name:
+        type: string
+    executor: node
+    working_directory: ~/project/packages/<< parameters.package_name >>
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: patch-package hash
+          command: md5sum patches/* > patches.hash || touch patches.hash
+      - restore_cache:
+          keys:
+            - 3-node-modules-<< parameters.package_name >>-{{ arch }}-{{ checksum "yarn.lock" }}-{{ checksum "patches.hash" }}
+      - run:
+          name: Prepare
+          command: yarn install --frozen-lockfile
+      - run:
+          name: Argon2
+          command: "[[ -s ./node_modules/argon2 ]] && npx node-pre-gyp rebuild -C ./node_modules/argon2 || echo 'skip'"
+      - save_cache:
+          key: 3-node-modules-<< parameters.package_name >>-{{ arch }}-{{ checksum "yarn.lock" }}-{{ checksum "patches.hash" }}
+          paths:
+            - ~/project/packages/<< parameters.package_name >>/node_modules
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - packages/web-client
+
+  # Typescript Jobs
+  build-tsc:
+    parameters:
+      package_name:
+        type: string
+    executor: node
+    working_directory: ~/project/packages/<< parameters.package_name >>
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Build
+          command: yarn build
+
+  build-schema:
+    parameters:
+      package_name:
+        type: string
+    executor: node
+    working_directory: ~/project/packages/<< parameters.package_name >>
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Build schema
+          command: |
+            NODE_ENV=test yarn generate_schema
+
+  unit-test:
+    parameters:
+      package_name:
+        type: string
+    executor: node
+    working_directory: ~/project/packages/<< parameters.package_name >>
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Test
+          command: yarn ci:test
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test-results/jest/
+      - store_test_results:
+          path: ./test-results/jest/
+
+  lint-and-test:
+    parameters:
+      package_name:
+        type: string
+    executor: node
+    working_directory: ~/project/packages/<< parameters.package_name >>
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Lint
+          command: yarn ci:lint
+      - run:
+          name: Test
+          command: yarn ci:test
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test-results/jest/
+      - store_test_results:
+          path: ./test-results/jest/
+
+
+  # API SERVER specific jobs
+  api-deploy:
+    parameters:
+      stack:
+        type: string
+      aws-user:
+        type: string
+      aws-suffix:
+        type: string
+    executor: node
+    working_directory: ~/project/packages/api-server/infra
+    steps:
+      - checkout:
+          path: ~/project
+      - pulumi/login
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID_<< parameters.aws-suffix >>
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY_<< parameters.aws-suffix >>
+          profile-name: << parameters.aws-user >>
+      - restore_cache:
+          keys:
+            - 1-node-modules-infra-{{ arch }}-{{ checksum "yarn.lock" }}
+            - 1-node-modules-infra
+      - run:
+          name: Prepare
+          command: yarn install
+      - save_cache:
+          key: 1-node-modules-infra-{{ arch }}-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+      - setup_remote_docker:
+          version: 19.03.13
+      - run:
+          name: Deploy
+          command: |
+            export AWS_PROFILE=<< parameters.aws-user >>
+            export AWS_ACCESS_KEY_ID=$YOUR_ACCESS_KEY_ID_<< parameters.aws-suffix >>
+            export AWS_SECRET_ACCESS_KEY=$YOUR_SECRET_ACCESS_KEY_<< parameters.aws-suffix >>
+            pulumi stack select << parameters.stack >>
+            pulumi up -y
+
+  notify-slack-prod-deployment-started:
+    parameters:
+      application:
+        type: string
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "attachments": [
+                {
+                  "color": "#2EB67D",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "*Deployment started*"
+                      },
+                      "fields": [
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Application*\n<< parameters.application >>"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Deployer*\n$CIRCLE_USERNAME"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Environment*\nProduction"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          event: always
+
+  notify-slack-prod-deployment-finished:
+    parameters:
+      application:
+        type: string
+    docker:
+      - image: 'cimg/base:stable'
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "attachments": [
+                {
+                  "color": "#2EB67D",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "*Deployment finished*"
+                      },
+                      "fields": [
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Application*\n<< parameters.application >>"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Deployer*\n$CIRCLE_USERNAME"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Environment*\nProduction"
+                        },
+                        {
+                          "type": "mrkdwn",
+                          "text": "*Last Commit*\n<$CIRCLE_COMPARE_URL|$CIRCLE_SHA1>"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          event: always
+
+ 
+  chromatic-deployment:
+    parameters:
+        package_name:
+          type: string
+    docker:
+      - image: circleci/node:12
+    working_directory: ~/project/packages/<< parameters.package_name >>
+    steps:
+      - checkout:
+          path: ~/project
+      - attach_workspace:
+          at: ~/project
+      - run: yarn chromatic --project-token=${CHROMATIC_PROJECT_TOKEN}
+
+workflows:
+  version: 2
+
+  # The main workflow responsible for triggering all other workflows
+  # in which changes are detected.
+  ci:
+    when: << pipeline.parameters.trigger >>
+    jobs:
+      - trigger-workflows
+
+  # Workflows defined for each package.
+
+  web-client:
+    #when: << pipeline.parameters.anubis-cli >>
+    jobs:
+      - prepare:
+          name: prepare
+          package_name: web-client
+      - unit-test:
+          name: unit-test
+          package_name: web-client
+          requires:
+            - prepare
+      - build-tsc:
+          name: build-tsc-lint
+          package_name: web-client
+          requires:
+            - prepare
+      - cypress/install:
+          name: e2e-install
+          yarn: true
+          working_directory: ~/project/packages/web-client
+          executor: cypress-16-4-0
+      - cypress/run:
+          name: e2e-run
+          install-command: echo 'Nothing to install in this job'
+          no-workspace: true
+          attach-workspace: true
+          working_directory: ~/project/packages/web-client
+          executor: cypress-16-4-0
+          start: yarn ci:start
+          wait-on: 'http://localhost:3010'
+          #if you want to run parallel
+          # parallel: true
+          # parallelism: 4
+          spec: '**/app/**/*'
+          record: true
+          requires:
+            - e2e-install
+      - chromatic-deployment:
+          name: chromatic-deployment
+          package_name: web-client
+          requires:
+            - prepare
+          filters:
+            branches:
+              only:
+                - main
+
+
+

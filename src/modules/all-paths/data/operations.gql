@@ -1,0 +1,10 @@
+fragment PathInfo on Path {
+  id
+  name
+}
+
+query allPaths {
+  paths {
+    ...PathInfo
+  }
+}

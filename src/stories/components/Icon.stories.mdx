@@ -1,0 +1,29 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs';
+
+import { Icon } from '../../components';
+
+<Meta title="components/Icon" component={Icon}/>
+
+# Checkbox
+
+You can use simple icons
+<Canvas>
+  <Story name="Icon">
+    <Icon name="close"/>
+  </Story>
+</Canvas>
+
+You can color them using the `text-{color}` class
+
+<Canvas>
+  <Icon name="close" className="text-plum-40"/>
+</Canvas>
+
+You can make them clickable by passing `onClick`
+
+<Canvas>
+  <Icon name="close" onClick={() => {
+    //noop
+  }}/>
+</Canvas>
+

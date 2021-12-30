@@ -1,0 +1,7 @@
+{
+    "baseUrl": "http://localhost:3010/",
+    "projectId": "isaa5r",
+    "env": {
+        "api_server": "http://127.0.0.1:3000"
+    }
+}

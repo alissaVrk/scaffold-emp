@@ -1,0 +1,38 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs';
+
+import { Input } from '../../components';
+
+<Meta title="components/Input" component={Input}/>
+
+# Input
+
+You can use override input types
+<Canvas style={{backgroundColor: '#eee'}}>
+  <Story name="Input">
+    <div className="flex gap-4">
+      <Input placeholder="This is a simple input"/>
+    </div>
+  </Story>
+</Canvas>
+
+<Canvas style={{backgroundColor: '#eee'}}>
+  <div className="flex gap-4">
+    <Input placeholder="Input with pre" pre={<span className="mr-4">🍺</span>}/>
+  </div>
+</Canvas>
+
+<Canvas style={{backgroundColor: '#eee'}}>
+  <Input placeholder="Input with Full width" fullWidth/>
+</Canvas>
+
+<Canvas style={{backgroundColor: '#eee'}}>
+  <div className="flex gap-4">
+    <Input value="Controlled Value"/>
+  </div>
+</Canvas>
+
+<Canvas style={{backgroundColor: '#eee'}}>
+  <div className="flex gap-4">
+    <Input value="Disabled" disabled/>
+  </div>
+</Canvas>

@@ -1,0 +1,15 @@
+{
+  "short_name": "empathy",
+  "name": "Empathy",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ede6dd",
+  "background_color": "#ede6dd"
+}

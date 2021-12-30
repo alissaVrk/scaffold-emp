@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  @variants responsive {
+    .text-e1 {
+      @apply font-serif antialiased font-normal;
+      font-size: 80px;
+      line-height: 90px;
+      letter-spacing: 0em;
+    }
+    .text-e2 {
+      @apply font-serif antialiased font-normal;
+      font-size: 64px;
+      line-height: 74px;
+      letter-spacing: 0em;
+    }
+    .text-e3 {
+      @apply font-serif antialiased font-normal;
+      font-size: 48px;
+      line-height: 58px;
+      letter-spacing: 0em;
+    }
+    .text-e4 {
+      @apply font-serif antialiased font-normal;
+      font-size: 40px;
+      line-height: 50px;
+      letter-spacing: 0em;
+    }
+    .text-e5 {
+      @apply font-serif antialiased font-normal;
+      font-size: 32px;
+      line-height: 42px;
+      letter-spacing: 0em;
+    }
+    .text-e6 {
+      @apply font-serif antialiased font-normal;
+      font-size: 24px;
+      line-height: 34px;
+      letter-spacing: 0em;
+    }
+    .text-e7 {
+      @apply font-serif antialiased font-normal;
+      font-size: 20px;
+      line-height: 30px;
+      letter-spacing: 0em;
+    }
+
+    .text-h1 {
+      @apply font-sans font-semibold antialiased;
+      font-size: 24px;
+      line-height: 32px;
+      letter-spacing: -0.019em;
+    }
+    .text-h2 {
+      @apply font-sans font-semibold antialiased;
+      font-size: 20px;
+      line-height: 28px;
+      letter-spacing: -0.017em;
+    }
+    .text-h3 {
+      @apply font-sans font-semibold antialiased;
+      font-size: 18px;
+      line-height: 26px;
+      letter-spacing: -0.014em;
+    }
+    .text-h4 {
+      @apply font-sans font-semibold antialiased;
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: -0.014em;
+    }
+    .text-h5 {
+      @apply font-sans font-semibold antialiased;
+      font-size: 14px;
+      line-height: 22px;
+      letter-spacing: -0.006em;
+    }
+
+    .text-body-large {
+      @apply font-sans antialiased;
+      font-size: 18px;
+      line-height: 30px;
+      letter-spacing: -0.014em;
+    }
+    .text-body-standard {
+      @apply font-sans antialiased;
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: -0.011em;
+    }
+    .text-body-small {
+      @apply font-sans antialiased;
+      font-size: 14px;
+      line-height: 22px;
+      letter-spacing: -0.006em;
+    }
+    .text-body-tiny {
+      @apply font-sans antialiased;
+      font-size: 12px;
+      line-height: 20px;
+      letter-spacing: 0em;
+    }
+
+    .text-label {
+      @apply font-sans antialiased uppercase;
+      font-size: 12px;
+      line-height: 20px;
+      letter-spacing: 0em;
+    }
+
+    .no-ligatures {
+      font-variant-ligatures: none;
+    }
+  }
+}
+
+.hitSlop::after {
+  content: "";
+  @apply cursor-pointer rounded-full bg-transparent absolute -left-3 -top-3 w-12 h-12;
+}
+
+.hitSlop:hover::after {
+  @apply bg-plum-4;
+}
+
+.hitSlop:active::after {
+  @apply bg-plum-8;
+}

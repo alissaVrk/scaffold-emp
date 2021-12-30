@@ -1,0 +1,4 @@
+src/core/gqlTypes.ts
+src/generated
+cypress
+tailwind.config.js
